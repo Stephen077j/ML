@@ -8,36 +8,36 @@
 
 tp :: Système complet de classification de fruits et de prédiction de prix : comparaison **Machine Learning vs Deep Learning** (régression logistique, Random Forest, réseau de neurones MLP), interface web interactive, monitoring de dérive des données, ré-entraînement en un clic.
 
-## 📓 Étude complète sur Google Colab (12 modèles de régression)
+##  Étude complète sur Google Colab (12 modèles de régression)
 
-> 🔗 **Notebook Colab (accès direct pour le prof)** : [Ouvrir l'étude dans Google Colab](https://colab.research.google.com/drive/1MS6kuIdoUY-aSeHIE03FR65ErxHEE055#scrollTo=zOKAnI8Co0H9)
+ ##  Notebook Colab accès direct : [Ouvrir l'étude dans Google Colab](https://colab.research.google.com/drive/1MS6kuIdoUY-aSeHIE03FR65ErxHEE055#scrollTo=zOKAnI8Co0H9)
 
 **12 algorithmes de régression** entraînés et comparés pour prédire `TARGET_Y` à partir de `FEATURE_X`
 (corrélation 0.96), avec optimisation d'hyperparamètres du meilleur modèle et analyse des résidus.
 
-### 🏆 Classement des 12 modèles (R² sur le jeu de test)
+###  Classement des 12 modèles (R² sur le jeu de test)
 
 ![Comparaison des 12 modèles de régression](docs/colab/comparaison-12-modeles.png)
 
 | Rang | Modèle | R² | Observation |
 |---|---|---|---|
-| 🥇 1 | **K-Neighbors (optimisé)** | **0.9893 → 0.991** | Après optimisation des hyperparamètres (k, pondération) |
-| 🥈 2 | Random Forest | 0.9874 | Ensembliste robuste |
-| 🥉 3 | Gradient Boosting | 0.9873 | Ensembliste séquentiel |
+|  1 | **K-Neighbors (optimisé)** | **0.9893 → 0.991** | Après optimisation des hyperparamètres (k, pondération) |
+|  2 | Random Forest | 0.9874 | Ensembliste robuste |
+| 3 | Gradient Boosting | 0.9873 | Ensembliste séquentiel |
 | 4 | Extra Trees | 0.9860 | |
 | 5 | Arbre de décision | 0.9838 | |
 | 6 | SVR | 0.9777 | |
 | 7 | Polynomial (deg 2) | 0.9758 | |
 | 8-12 | Linéaire, Lasso, Ridge, Bayesian Ridge, ElasticNet | 0.9353 | Les modèles linéaires plafonnent : la relation est **en escalier**, pas linéaire |
 
-### 📈 Pourquoi les modèles non-linéaires gagnent
+###  Pourquoi les modèles non-linéaires gagnent =
 
 La donnée suit une **structure en escalier** que la régression linéaire (bleu) ne peut pas suivre,
 alors que K-Neighbors, Random Forest et Gradient Boosting épousent chaque palier :
 
 ![Courbes de prédiction comparées](docs/colab/courbes-prediction.png)
 
-### 🔍 Diagnostic du modèle retenu (K-Neighbors optimisé)
+###  Diagnostic du modèle retenu (K-Neighbors optimisé)
 
 Analyse des résidus : centrés sur zéro, sans biais systématique — l'erreur augmente
 légèrement pour les grandes valeurs (hétéroscédasticité visible au-delà de 80) :
@@ -46,7 +46,7 @@ légèrement pour les grandes valeurs (hétéroscédasticité visible au-delà d
 |---|---|
 | ![Distribution des résidus](docs/colab/distribution-residus.png) | ![Analyse des résidus](docs/colab/analyse-residus.png) |
 
-### 🔗 Corrélation des variables
+###  Corrélation des variables
 
 ![Matrice de corrélation](docs/colab/matrice-correlation.png)
 
@@ -79,22 +79,11 @@ Trois modèles entraînés et évalués sur les mêmes données (25 % de test, s
 
 ![Onglet Monitoring](docs/screenshots/monitoring.png)
 
-##  Prédiction en lot
+## on peut faire  prédiction en lot aussi 
 Upload d'un CSV (jusqu'à 10 000 lignes) → téléchargement du même fichier enrichi : fruit prédit, confiance, prix estimé.
 
-##  Ré-entraînement en un clic
+##  ET Ré-entraînement en un clic
 Bouton dans l'interface: régénère les données, ré-entraîne les 3 modèles, recharge en mémoire, met à jour les graphiques... ect
 
-## 🚀 Lancer l'application
-
-```bash
-pip install -r requirements.txt
-cd ml && python train.py && cd ..     # entraîne les 3 modèles (~1 min)
-uvicorn app:app --reload              # http://localhost:8000
-```
-
-Tests : `pytest -v` (9 tests) · Docker : `docker build -t fruit-mlops . && docker run -p 8000:8000 fruit-mlops`
-
----
 
  [github.com/Stephen077j](https://github.com/Stephen077j)
