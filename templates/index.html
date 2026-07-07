@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fruit MLOps v2 — ML & Deep Learning</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+  <header class="bg-gradient-to-r from-green-700 to-emerald-600 text-white px-6 py-4">
+    <div class="max-w-5xl mx-auto flex items-center gap-3 flex-wrap">
+      <h1 class="text-xl font-bold">🍍 Fruit MLOps v2</h1>
+      <span class="text-emerald-100 text-sm">Classification ML & Deep Learning + prédiction de prix</span>
+      <button onclick="retrain()" id="retrainBtn"
+        class="ml-auto bg-white/15 hover:bg-white/25 border border-white/30 rounded-lg px-3 py-1.5 text-sm">
+        🔄 Ré-entraîner
+      </button>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto flex gap-1 px-4 overflow-x-auto">
+      <button class="tab px-4 py-3 text-sm font-medium border-b-2 border-emerald-600 text-emerald-700" data-tab="predire">🔮 Prédire</button>
+      <button class="tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500" data-tab="lot">📁 Lot CSV</button>
+      <button class="tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500" data-tab="modeles">🧠 Modèles</button>
+      <button class="tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500" data-tab="monitoring">📈 Monitoring</button>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto p-4 md:p-6">
+
+    <!-- ===== PRÉDIRE ===== -->
+    <section id="tab-predire" class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-semibold mb-4">Caractéristiques du fruit</h2>
+        <div id="sliders" class="space-y-4"></div>
+        <button onclick="predict()" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-2.5 font-semibold">
+          Analyser ce fruit
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div id="result" class="bg-white rounded-2xl shadow p-5 hidden">
+          <div class="text-sm text-slate-500">Fruit identifié</div>
+          <div class="flex items-baseline gap-3">
+            <div id="fruitName" class="text-3xl font-bold text-emerald-700"></div>
+            <div id="confiance" class="text-sm text-slate-500"></div>
+          </div>
+          <div id="probas" class="mt-4 space-y-2"></div>
+          <div class="mt-4 pt-4 border-t">
+            <div class="text-sm text-slate-500">Prix estimé</div>
+            <div id="prix" class="text-2xl font-bold text-amber-600"></div>
+          </div>
+        </div>
+        <div id="resultEmpty" class="bg-white rounded-2xl shadow p-8 text-center text-slate-400">
+          Réglez les curseurs puis cliquez « Analyser » 🍌🥭
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LOT CSV ===== -->
+    <section id="tab-lot" class="hidden">
+      <div class="bg-white rounded-2xl shadow p-6 max-w-xl mx-auto text-center">
+        <h2 class="font-semibold mb-2">Prédiction en lot</h2>
+        <p class="text-sm text-slate-500 mb-4">
+          Envoyez un CSV avec les colonnes
+          <code class="bg-slate-100 px-1 rounded text-xs">poids_g, diametre_mm, longueur_mm, sucre_brix, acidite_ph, fermete</code>
+          — vous recevez le même fichier + fruit prédit, confiance et prix.
+        </p>
+        <input type="file" id="csvFile" accept=".csv" class="mb-4 text-sm">
+        <button onclick="predictBatch()" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-6 py-2.5 font-semibold">
+          Prédire le fichier
+        </button>
+        <p id="batchMsg" class="mt-3 text-sm"></p>
+        <a href="/api/charts/feature_importance" class="hidden"></a>
+        <p class="mt-4 text-xs text-slate-400">Astuce : téléchargez <a class="underline" href="#" onclick="sampleCsv(); return false;">un CSV d'exemple</a></p>
+      </div>
+    </section>
+
+    <!-- ===== MODÈLES ===== -->
+    <section id="tab-modeles" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-semibold mb-3">Comparaison des modèles (classification)</h2>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-slate-500"><th class="py-2">Modèle</th><th>Accuracy</th><th>F1 macro</th><th></th></tr></thead>
+          <tbody id="modelRows"></tbody>
+        </table>
+        <p class="text-sm text-slate-500 mt-3">Régression du prix : <span id="prixMetrics" class="font-medium text-slate-700"></span></p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow p-4">
+          <img src="/api/charts/confusion_matrix" alt="Matrice de confusion" class="w-full rounded-lg">
+        </div>
+        <div class="bg-white rounded-2xl shadow p-4">
+          <img src="/api/charts/feature_importance" alt="Importance des features" class="w-full rounded-lg">
+        </div>
+        <div class="bg-white rounded-2xl shadow p-4 md:col-span-2">
+          <img src="/api/charts/learning_curve" alt="Courbe d'apprentissage" class="w-full max-w-xl mx-auto rounded-lg">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MONITORING ===== -->
+    <section id="tab-monitoring" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <h2 class="font-semibold">Dérive des données</h2>
+          <span id="driftStatus" class="px-3 py-1 rounded-full text-xs font-medium"></span>
+        </div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-slate-500">
+            <th class="py-2">Caractéristique</th><th>Moy. entraînement</th><th>Moy. récente</th><th>Z-score</th><th></th>
+          </tr></thead>
+          <tbody id="driftRows"></tbody>
+        </table>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-semibold mb-3">Dernières prédictions</h2>
+        <div id="historyRows" class="space-y-1 text-sm"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SLIDERS = [
+      { key: 'poids_g',      label: 'Poids (g)',        min: 5,   max: 2500, step: 5,    value: 120 },
+      { key: 'diametre_mm',  label: 'Diamètre (mm)',    min: 10,  max: 200,  step: 1,    value: 35 },
+      { key: 'longueur_mm',  label: 'Longueur (mm)',    min: 15,  max: 350,  step: 1,    value: 180 },
+      { key: 'sucre_brix',   label: 'Sucre (°Brix)',    min: 5,   max: 30,   step: 0.5,  value: 20 },
+      { key: 'acidite_ph',   label: 'Acidité (pH)',     min: 2.5, max: 7,    step: 0.05, value: 5 },
+      { key: 'fermete',      label: 'Fermeté (kg/cm²)', min: 0.5, max: 8,    step: 0.1,  value: 2.5 },
+    ];
+
+    // construit les curseurs
+    const slidersEl = document.getElementById('sliders');
+    for (const s of SLIDERS) {
+      slidersEl.insertAdjacentHTML('beforeend', `
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <label class="text-slate-600">${s.label}</label>
+            <span id="val-${s.key}" class="font-semibold">${s.value}</span>
+          </div>
+          <input type="range" id="in-${s.key}" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.value}"
+            class="w-full accent-emerald-600"
+            oninput="document.getElementById('val-${s.key}').textContent = this.value">
+        </div>`);
+    }
+
+    // onglets
+    document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(b => b.className = 'tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500');
+      btn.className = 'tab px-4 py-3 text-sm font-medium border-b-2 border-emerald-600 text-emerald-700';
+      document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+      const tab = document.getElementById('tab-' + btn.dataset.tab);
+      tab.classList.remove('hidden');
+      if (btn.dataset.tab === 'modeles') loadModels();
+      if (btn.dataset.tab === 'monitoring') loadMonitoring();
+    }));
+
+    async function predict() {
+      const body = {};
+      for (const s of SLIDERS) body[s.key] = +document.getElementById('in-' + s.key).value;
+      const r = await fetch('/api/predict', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+      if (!r.ok) return alert('Erreur : ' + await r.text());
+      const d = await r.json();
+      document.getElementById('resultEmpty').classList.add('hidden');
+      document.getElementById('result').classList.remove('hidden');
+      document.getElementById('fruitName').textContent = d.fruit;
+      document.getElementById('confiance').textContent = 'confiance ' + Math.round(d.confiance * 100) + ' %';
+      document.getElementById('prix').textContent = new Intl.NumberFormat('fr-FR').format(d.prix_estime_ar_kg) + ' Ar/kg';
+      const probas = document.getElementById('probas');
+      probas.innerHTML = '';
+      for (const [name, p] of Object.entries(d.probabilites).sort((a, b) => b[1] - a[1])) {
+        probas.insertAdjacentHTML('beforeend', `
+          <div class="flex items-center gap-2 text-sm">
+            <span class="w-20">${name}</span>
+            <div class="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
+              <div class="bg-emerald-500 h-3" style="width:${Math.round(p * 100)}%"></div>
+            </div>
+            <span class="w-12 text-right text-slate-500">${Math.round(p * 100)} %</span>
+          </div>`);
+      }
+    }
+
+    async function predictBatch() {
+      const file = document.getElementById('csvFile').files[0];
+      const msg = document.getElementById('batchMsg');
+      if (!file) { msg.textContent = 'Choisissez un fichier CSV d\'abord'; return; }
+      const fd = new FormData();
+      fd.append('file', file);
+      msg.textContent = 'Prédiction en cours...';
+      const r = await fetch('/api/predict-batch', { method: 'POST', body: fd });
+      if (!r.ok) { msg.textContent = '⚠️ ' + (await r.json()).detail; return; }
+      const blob = await r.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'predictions.csv';
+      a.click();
+      msg.textContent = '✅ predictions.csv téléchargé';
+    }
+
+    function sampleCsv() {
+      const csv = 'poids_g,diametre_mm,longueur_mm,sucre_brix,acidite_ph,fermete\n120,35,180,20,5,2.5\n350,90,110,15,4,4\n20,32,35,17,4.5,3\n1500,120,250,13,3.6,5.5\n';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = 'exemple_fruits.csv';
+      a.click();
+    }
+
+    async function loadModels() {
+      const m = await (await fetch('/api/metrics')).json();
+      const rows = document.getElementById('modelRows');
+      rows.innerHTML = '';
+      for (const [name, r] of Object.entries(m.classification.resultats)) {
+        const best = name === m.classification.modele_retenu;
+        rows.insertAdjacentHTML('beforeend', `
+          <tr class="border-t ${best ? 'bg-emerald-50' : ''}">
+            <td class="py-2 font-medium">${name.replaceAll('_', ' ')}</td>
+            <td>${(r.accuracy * 100).toFixed(1)} %</td>
+            <td>${(r.f1_macro * 100).toFixed(1)} %</td>
+            <td>${best ? '🏆 retenu' : ''}</td>
+          </tr>`);
+      }
+      document.getElementById('prixMetrics').textContent =
+        `erreur moyenne ${new Intl.NumberFormat('fr-FR').format(m.regression_prix.mae_ar)} Ar/kg — R² ${m.regression_prix.r2}`;
+      // recharge les images (après ré-entraînement)
+      document.querySelectorAll('#tab-modeles img').forEach(img => img.src = img.src.split('?')[0] + '?' + Date.now());
+    }
+
+    async function loadMonitoring() {
+      const m = await (await fetch('/api/monitoring')).json();
+      const badge = document.getElementById('driftStatus');
+      badge.textContent = m.statut + ' · ' + m.n_predictions + ' prédictions';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-medium ' +
+        (m.statut === 'ok' ? 'bg-green-100 text-green-700' : m.statut === 'alerte dérive' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600');
+      const rows = document.getElementById('driftRows');
+      rows.innerHTML = '';
+      for (const d of (m.drift || [])) {
+        rows.insertAdjacentHTML('beforeend', `
+          <tr class="border-t ${d.alerte ? 'bg-red-50' : ''}">
+            <td class="py-2">${d.feature}</td><td>${d.moyenne_entrainement}</td>
+            <td>${d.moyenne_recente}</td><td>${d.z_score}</td>
+            <td>${d.alerte ? '🔴 dérive' : '🟢'}</td>
+          </tr>`);
+      }
+      const hist = await (await fetch('/api/history')).json();
+      const hrows = document.getElementById('historyRows');
+      hrows.innerHTML = hist.length ? '' : '<p class="text-slate-400">Aucune prédiction pour l\'instant.</p>';
+      for (const h of hist.slice(0, 15)) {
+        hrows.insertAdjacentHTML('beforeend', `
+          <div class="flex gap-3 border-t py-1.5">
+            <span class="text-slate-400">${h.horodatage.replace('T', ' ')}</span>
+            <span class="font-medium">${h.fruit}</span>
+            <span class="text-slate-500">${Math.round(h.confiance * 100)} %</span>
+            <span class="ml-auto text-amber-700">${new Intl.NumberFormat('fr-FR').format(h.prix_estime_ar_kg)} Ar/kg</span>
+          </div>`);
+      }
+    }
+
+    // liens directs : /#modeles ouvre l'onglet, /#demo lance une prédiction
+    window.addEventListener('load', () => {
+      const hash = location.hash.replace('#', '');
+      if (hash === 'demo') setTimeout(predict, 600);
+      else if (['lot', 'modeles', 'monitoring'].includes(hash)) {
+        document.querySelector(`[data-tab="${hash}"]`).click();
+      }
+    });
+
+    async function retrain() {
+      const btn = document.getElementById('retrainBtn');
+      btn.textContent = '⏳ Entraînement...';
+      btn.disabled = true;
+      const r = await fetch('/api/retrain', { method: 'POST' });
+      btn.disabled = false;
+      btn.textContent = '🔄 Ré-entraîner';
+      if (r.ok) { alert('Modèles ré-entraînés ✅'); loadModels(); }
+      else alert('Erreur au ré-entraînement');
+    }
+  </script>
+</body>
+</html>
