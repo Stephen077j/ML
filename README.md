@@ -87,3 +87,19 @@ Bouton dans l'interface: régénère les données, ré-entraîne les 3 modèles,
 
 
  [github.com/Stephen077j](https://github.com/Stephen077j)
+
+
+---
+
+## Reproduire et vérifier les expériences
+
+Les expériences de classification de fruits, régression des prix et notebook Colab doivent être interprétées séparément.
+
+1. Noter les versions des dépendances et les sources des données.
+2. Séparer données d'entraînement, validation et test pour éviter les fuites de données.
+3. Conserver les graines aléatoires et les paramètres des modèles utilisés.
+4. Relancer l'évaluation sur le jeu de test sans ré-optimiser dessus.
+5. Noter les commandes réellement exécutées, leurs métriques et leurs limites.
+6. Ne pas publier de secrets ni de données personnelles.
+
+**Contributions :** proposer les changements sur une branche et indiquer les vérifications exécutées dans la pull request. Les résultats annoncés plus haut doivent être revérifiés avant utilisation en production.
